@@ -20,7 +20,7 @@ public class SocketServerClient extends ServerClient {
 	private Socket socket;
 	private BufferedReader reader;
 	private BufferedWriter writer;
-	private ReceiveMessageTask receiveMessageTask;
+	private ReceiveMessagesTask receiveMessageTask;
 
 	public SocketServerClient(String ipAddress, int portNumber) throws Exception {
 		this.ipAddress = ipAddress;
@@ -54,6 +54,7 @@ public class SocketServerClient extends ServerClient {
 	@Override
 	public void close() {
 		Utils.execIgnoreException(() -> IOUtils.writeAndFlush(writer, String.format("_logout:%s_", username)));
+		this.receiveMessageTask.logout();
 		Utils.closeQuietly(writer, reader, socket);
 	}
 
@@ -65,8 +66,9 @@ public class SocketServerClient extends ServerClient {
 	@Override
 	public void startReceivingMessages(BiConsumer<String, String> messageConsumer) {
 		super.startReceivingMessages(messageConsumer);
-		receiveMessageTask = new ReceiveMessageTask(reader, userLogsInConsumer, userLogsOutConsumer,
-				this.messageConsumer);
+		receiveMessageTask = new ReceiveMessagesTask(reader, unavailableServerFunction, userLogsInConsumer,
+				userLogsOutConsumer,
+				messageConsumer);
 		new Thread(receiveMessageTask).start();
 	}
 }

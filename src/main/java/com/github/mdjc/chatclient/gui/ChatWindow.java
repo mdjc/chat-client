@@ -33,9 +33,10 @@ public class ChatWindow extends JFrame {
 	private final String username;
 	private final ServerClient client;
 
-	public ChatWindow(ServerClient client, String username) {
+	private ChatWindow(ServerClient client, String username) {
 		this.username = username;
 		this.client = client;
+		client.setUnavailableServerFunction(this::manageServerUnavailable);
 		client.setUserLoginConsumer(this::displayUserLogsIn);
 		client.setUserLogoutConsumer(this::displayUserLogsOut);
 		client.startReceivingMessages(this::display);
@@ -124,7 +125,13 @@ public class ChatWindow extends JFrame {
 			client.send(message);
 		} catch (Exception e) {
 			LOGGER.error("Exception: {} ", e);
-			JOptionPane.showMessageDialog(this, "Error sending message");
+			JOptionPane.showMessageDialog(this, "Server is unavailable, try log in again");
 		}
+	}
+
+	public void manageServerUnavailable() {
+		JOptionPane.showMessageDialog(this, "Server is unavailable, try log in again");
+		LoginWindow.create(client);
+		close(null);
 	}
 }

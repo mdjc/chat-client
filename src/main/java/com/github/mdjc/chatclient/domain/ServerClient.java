@@ -3,27 +3,35 @@ package com.github.mdjc.chatclient.domain;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import com.github.mdjc.commons.Arguments;
+
 public abstract class ServerClient {
+	protected VoidFunction unavailableServerFunction;
 	protected Consumer<String> userLogsInConsumer;
 	protected Consumer<String> userLogsOutConsumer;
 	protected BiConsumer<String, String> messageConsumer;
 
-	public void setUserLoginConsumer(Consumer<String> userLogsInConsumer) {
-		if (userLogsInConsumer == null) {
-			userLogsInConsumer = s -> {
-			};
-		}
+	public ServerClient() {
+		unavailableServerFunction = () -> {
+		};
+		userLogsInConsumer = s -> {
+		};
+		userLogsInConsumer = s -> {
+		};
+		messageConsumer = (u, m) -> {
+		};
+	}
 
-		this.userLogsInConsumer = userLogsInConsumer;
+	public void setUserLoginConsumer(Consumer<String> userLogsInConsumer) {
+		this.userLogsInConsumer = Arguments.checkNull(userLogsInConsumer);
 	}
 
 	public void setUserLogoutConsumer(Consumer<String> userLogsInConsumer) {
-		if (userLogsInConsumer == null) {
-			userLogsInConsumer = s -> {
-			};
-		}
+		this.userLogsOutConsumer = Arguments.checkNull(userLogsInConsumer);
+	}
 
-		this.userLogsOutConsumer = userLogsInConsumer;
+	public void setUnavailableServerFunction(VoidFunction unavailableServerFunction) {
+		this.unavailableServerFunction = Arguments.checkNull(unavailableServerFunction);
 	}
 
 	protected abstract void connect() throws Exception;

@@ -8,17 +8,24 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ReceiveMessageTask implements Runnable {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ReceiveMessageTask.class);
+import com.github.mdjc.chatclient.domain.VoidFunction;
+
+public class ReceiveMessagesTask implements Runnable {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ReceiveMessagesTask.class);
 
 	private final BufferedReader reader;
+	private final VoidFunction unavailableServerFunction;
 	private final Consumer<String> userLogsInConsumer;
 	private final Consumer<String> userLogsOutConsumer;
 	private final BiConsumer<String, String> messageConsumer;
 
-	public ReceiveMessageTask(BufferedReader reader, Consumer<String> userLogsInConsumer,
+	private volatile boolean logout = false;
+
+	public ReceiveMessagesTask(BufferedReader reader, VoidFunction unavailableServerFunction,
+			Consumer<String> userLogsInConsumer,
 			Consumer<String> userLogsOutConsumer, BiConsumer<String, String> messageConsumer) {
 		this.reader = reader;
+		this.unavailableServerFunction = unavailableServerFunction;
 		this.userLogsInConsumer = userLogsInConsumer;
 		this.userLogsOutConsumer = userLogsOutConsumer;
 		this.messageConsumer = messageConsumer;
@@ -47,6 +54,8 @@ public class ReceiveMessageTask implements Runnable {
 			}
 		} catch (IOException e) {
 			LOGGER.error("Exception receiving message from server: {}", e.getMessage());
+			if (!logout)
+				unavailableServerFunction.function();
 		}
 	}
 
@@ -56,5 +65,9 @@ public class ReceiveMessageTask implements Runnable {
 
 	private boolean userLogsOut(String message) {
 		return message.startsWith("_logout_:");
+	}
+
+	public void logout() {
+		logout = true;
 	}
 }
