@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.function.BiConsumer;
 
@@ -29,7 +30,8 @@ public class SocketServerClient extends ServerClient {
 
 	@Override
 	protected void connect() throws Exception {
-		socket = new Socket(ipAddress, portNumber);
+		socket = new Socket();
+		socket.connect(new InetSocketAddress(ipAddress, portNumber), 3_000);
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 	}
